@@ -1,7 +1,7 @@
-// src/routes/customerRoutes.js
+// src/routes/CustomerRoutes.js
 const express = require('express');
 const router = express.Router();
-const customerController = require('../controllers/customerController');
+const customerController = require('../controllers/CustomerController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 // Apply authentication middleware to all customer routes
