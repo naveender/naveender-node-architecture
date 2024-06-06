@@ -13,5 +13,6 @@ module.exports = {
     smtpMailFrom: process.env.SMTP_MAIL_FROM, 
     adminEmail: process.env.ADMIN_EMAIL,
     emailVerificationSecretKey: process.env.EMAIL_VERIFICATION_SECRET_KEY,
+    clientAppUrl: process.env.CLIENT_APP_URL,
     
 };

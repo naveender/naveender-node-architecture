@@ -19,6 +19,7 @@ const RESTRESPONSE = require("../utils/RESTRESPONSE");
 const { getDifferenceBetweenTwoDates } = require("../services/CommonFunction");
 const config = require("../config/config");
 const { EmailSent } = require("../services/EmailService");
+const { templateMaster } = require("../views/emailTemplates/templateMaster");
 
 // const { transporter } = require("../utils/Transporter");
 // const {
@@ -83,7 +84,17 @@ const CreateUser = async (req, res, next) => {
     const result = await SchemaCheck.save();
     if (result) {
       // MAIL SENDING FUNCTIONALITY
-      let sent=await EmailSent("Mysubkect","rajveercoder@gmail.com","Hoorry");
+      
+      let dynamicEmailTemplateVariables = {
+        logo:"demologo",
+        app_link:config.clientAppUrl,
+        username: userName,
+        message: "Please confirm your email address by clicking the button below. This is so you can unlock access to your new Market Alert Pro account. If you don't verify your email address within 7 days, we'll have to automatically delete your account.",
+        btnName: "VERIFY YOUR EMAIL",
+        btnLink: `${config.clientAppUrl}/verify?Token=${emailVerificationToken}`,
+      };
+      let emailTemplateDetails=await templateMaster("account_email_verification",dynamicEmailTemplateVariables);
+      let sent=await EmailSent(emailTemplateDetails.emailSubject,email,emailTemplateDetails.emailBody);
       if(sent)
       return res.send(
         RESTRESPONSE(true, "User has been successfully created!", {
