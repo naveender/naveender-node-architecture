@@ -1,11 +1,46 @@
 // const { EmailSent } = require("../controller/UserController");
-
-const { UserSchema } = require("../model/UserSchema");
 const bycrypt = require("bcryptjs");
-const { CodeSchema } = require("../model/CodeSchema");
-const { tokenScehmaUser } = require("../model/tokenSchema");
+const { emailTransporter } = require("../utils/emailTransporter");
+const config = require("../config/config");
+// const { UserSchema } = require("../model/UserSchema");
+// const { CodeSchema } = require("../model/CodeSchema");
+// const { userStoryEmailContent } = require("../utils/UserStoryEmailContent");
 
-const { userStoryEmailContent } = require("../utils/UserStoryEmailContent");
+
+
+//sent email
+const EmailSent = async (subject, email, emailcontent) => {
+  let result = await emailTransporter.sendMail({
+    to: email,
+    cc:config.adminEmail,
+    from: {
+      name: config.applicationName,
+      address: config.smtpMailFrom,
+    },
+    subject: subject,
+    html: `${emailcontent}   
+      `,
+  });
+  if (result) {
+    return true;
+  }
+};
+
+const EmailSentList = async (subject, email = [], emailcontent) => {
+  let result = await emailTransporter.sendMail({
+    to: email,
+    from: {
+      name: config.applicationName,
+      address: config.smtpMailFrom,
+    },
+    subject: subject,
+    html: `${emailcontent}   
+    `,
+  });
+  if (result) {
+    return true;
+  }
+};
 
 const verifyPasswordService = async (password, id) => {
   let findUser = await UserSchema.findOne({ _id: id });
@@ -31,10 +66,9 @@ const verifyPasswordService = async (password, id) => {
 };
 const getVerficationCode = async (email, id) => {
   let findUserFromUserScema = await UserSchema.find({ email: email });
-  let findUserFromTokenScema = await tokenScehmaUser.find({ email: email });
+  
   if (
-    findUserFromUserScema[0]?.email === email ||
-    findUserFromTokenScema[0]?.email === email
+    findUserFromUserScema[0]?.email === email 
   ) {
     return {
       find: false,
@@ -133,25 +167,7 @@ const makeEmailContentemail = (firstName, code) => {
       <p style="color:black; font-size:16px; margin-top:10px; margin-left:10px;">If you did not request to change your email address, please ignore this message and contact our support team immediately.</p><br></br>    
                             </div>`);
 };
-const appConfig = require("../appConfig")
 
-//sent email
-const EmailSent = async (subject, email, emailcontent) => {
-  let result = await transporter.sendMail({
-    to: email,
-    cc:appConfig.adminEmail,
-    from: {
-      name: "Market Alert Pro",
-      address: "accounts@marketalertpro.com",
-    },
-    subject: subject,
-    html: `${emailcontent}   
-      `,
-  });
-  if (result) {
-    return true;
-  }
-};
 
 //save in DB
 const SaveCodeInDB = async (userId, code, email,codeType,token) => {
@@ -245,10 +261,7 @@ const updateEmail = async (id, email) => {
       { email: email }
     );
     console.log("updateEmailOfUser", updateEmailOfUser);
-    let updateEmailOfTokenSchema = await tokenScehmaUser.updateMany(
-      { email: findForTokenSchema.email },
-      { email: email }
-    );
+    
     // let updateEmailOfUserSchema = await User.updateMany({email:findForTokenSchema.email},{email:email});
 
     if (updateEmailOfUser) {
@@ -277,4 +290,4 @@ const updateStripeEmail = async (customerId, newEmail) => {
 
 
 
-module.exports = { verifyPasswordService, getVerficationCode, verifyCode,generateSixDigitCode,SaveCodeInDB,checkExpiryOfCode };
+module.exports = { verifyPasswordService, getVerficationCode, verifyCode,generateSixDigitCode,SaveCodeInDB,checkExpiryOfCode,EmailSent,EmailSentList };

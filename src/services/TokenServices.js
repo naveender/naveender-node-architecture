@@ -9,11 +9,11 @@ const createToken = (email, key) => {
   );
   return token;
 };
-const 
-verifyToken = async (token, key) => {
+
+const  verifyToken = async (token, key) => {
   let tokenCheck=false
   jwt.verify(
-    
+
     token,
     key,
     function (err, decoded) {
@@ -21,7 +21,7 @@ verifyToken = async (token, key) => {
         console.log(err);
         return false
         // return tokenCheck
-        // return res.send(RESTRESPONSE(false, "token expired", { token: false }));
+        // return res.send(RESTRESPONSE(false, "token expired", { err }));
       } else {
         // console.log("token true");
         // tokenCheck=true

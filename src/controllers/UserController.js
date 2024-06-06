@@ -1,3 +1,12 @@
+/*
+=================================================================================
+      DESCRIPTION--->                                                                            
+⚡🔌 USER CONTROLLER:CONTENT LIST🌟🔌                                              
+      1.CreateUser- Register the user
+      2.                                                  
+=================================================================================
+*/
+
 const bycrypt = require("bcryptjs");
 const crypto = require("crypto");
 const validator = require("validator");
@@ -7,7 +16,9 @@ const jwt = require("jsonwebtoken");
 const { UserSchema } = require("../models/User");
 const { createToken } = require("../services/TokenServices");
 const RESTRESPONSE = require("../utils/RESTRESPONSE");
-const { getDifferenceBetweenTwoDates } = require("../services/NormalFunction");
+const { getDifferenceBetweenTwoDates } = require("../services/CommonFunction");
+const config = require("../config/config");
+const { EmailSent } = require("../services/EmailService");
 
 // const { transporter } = require("../utils/Transporter");
 // const {
@@ -18,6 +29,7 @@ const { getDifferenceBetweenTwoDates } = require("../services/NormalFunction");
 //   SaveCodeInDB,
 //   checkExpiryOfCode,
 // } = require("../services/ChangeEmailService");
+
 
 
 const CreateUser = async (req, res, next) => {
@@ -39,13 +51,14 @@ const CreateUser = async (req, res, next) => {
       });
     });
     const token = buffer.toString('hex');
-
+    let emailVerificationToken = await createToken(email, config.emailVerificationSecretKey);
     const SchemaCheck = new UserSchema({
       firstName,
       lastName,
       userName,
       email,
       phone,
+      emailVerificationToken,
       password: hashedPassword,
       repeatPassword: repeatHashedPassword,
       resetToken: token,
@@ -70,7 +83,8 @@ const CreateUser = async (req, res, next) => {
     const result = await SchemaCheck.save();
     if (result) {
       // MAIL SENDING FUNCTIONALITY
-
+      let sent=await EmailSent("Mysubkect","rajveercoder@gmail.com","Hoorry");
+      if(sent)
       return res.send(
         RESTRESPONSE(true, "User has been successfully created!", {
           user: result,
@@ -78,7 +92,7 @@ const CreateUser = async (req, res, next) => {
       );
     } else {
       return res.send(
-        RESTRESPONSE(false, "An unknown error occurred")
+        RESTRESPONSE(false, "An unknown error occurred while saving information")
       );
     }
     
@@ -712,37 +726,7 @@ const Recaptch = async (req, res) => {
   return res.json({ success: true, msg: "Captcha passed" });
 };
 
-const EmailSent = async (subject, email, emailcontent) => {
-  let result = await transporter.sendMail({
-    to: email,
-    cc: appConfig.adminEmail,
-    from: {
-      name: "Market Alert Pro",
-      address: "support@marketalertpro.com",
-    },
-    subject: subject,
-    html: `${emailcontent}   
-    `,
-  });
-  if (result) {
-    return true;
-  }
-};
-const EmailSentList = async (subject, email = [], emailcontent) => {
-  let result = await transporter.sendMail({
-    to: email,
-    from: {
-      name: "Market Alert Pro",
-      address: "accounts@marketalertpro.com",
-    },
-    subject: subject,
-    html: `${emailcontent}   
-    `,
-  });
-  if (result) {
-    return true;
-  }
-};
+
 const verifyUserToken = async (req, res) => {
   let token = req.body.token;
   console.log("token", token);
@@ -1669,8 +1653,6 @@ module.exports = {
   verifyUserToken,
   userFurtherDetails,
   notifyEmail,
-  EmailSent,
-  EmailSentList,
   changePassword,
   updateUserInfo,
   MisssentverificationEmailAgain,
